@@ -77,7 +77,13 @@ qplot(x=citric.acid, data=wine, binwidth=0.01) +
   scale_x_continuous(breaks=seq(0,1,0.1))
 ```
 
-> Above are the histograms related to acidity. The bulk of the fixed acidity data is between 6.5 and 9.5. The bulk of the volatile acidity is between 0.3 and 0.7. These two variables follow a fairly normal distribution with some outliers on the high end. The data for citric acid, on the other hand, is much more spread out, with peaks at 0 and about 0.49. The majority of citric acid data falls between 0 and 0.5.
+```{r}
+qplot(x=pH, data=wine, binwidth=0.01) +
+  scale_x_continuous(breaks=seq(0,4.01,0.1))
+```
+
+
+> Above are the histograms related to acidity and pH. The bulk of the fixed acidity data is between 7 and 9. The bulk of the volatile acidity is between 0.3 and 0.7. These two variables follow a fairly normal distribution with some outliers on the high end. The data for citric acid, on the other hand, is much more spread out, with peaks at 0 and about 0.49. The majority of citric acid data falls between 0 and 0.5. Lastly, the plot for pH appears normally distributed with just a few outliers around 2.75 and 3.8-4.0. The bulk of the pH data falls between 3.1 and 3.5 with a peak around 3.3.
 
 ```{r}
 qplot(x=residual.sugar, data=wine, binwidth=0.1) +
@@ -90,7 +96,7 @@ qplot(x=residual.sugar, data=wine, binwidth=0.01) +
 
 ```
 
-> Above, I log transormed the long-tailed residual sugar data. On the log scale, since 3 is about halfway between 1 and 10, we can see that the bulk of the data falls around 2. The transformed data still has a tail due to outliers out to 16.
+> Above, I plotted histograms of residual sugar and the log transformation of residual sugar due to its long-tailed nature. The peak of the data is around 2-2.5. The transformed data still has a tail due to far outliers out to 16.
 
 ```{r}
 qplot(x=chlorides, data=wine, binwidth=0.005) +
@@ -98,9 +104,11 @@ qplot(x=chlorides, data=wine, binwidth=0.005) +
 ```
 
 ```{r}
-qplot(log(x=chlorides), data=wine, binwidth=0.02)
+qplot(x=chlorides, data=wine, binwidth=0.02) +
+  scale_x_log10()
 ```
 
+> Similarly to the sugar data, I plotted histograms of the chloride data and its log transofmration due to its right-skewdness and long tail. The bulk of the data is between 0.06 and 0.1, with a peak of about 0.8.
 
 ```{r}
 qplot(x=free.sulfur.dioxide, data=wine, binwidth=1) +
@@ -108,7 +116,8 @@ qplot(x=free.sulfur.dioxide, data=wine, binwidth=1) +
 ```
 
 ```{r}
-qplot(x=log(free.sulfur.dioxide), data=wine, binwidth=0.05)
+qplot(x=free.sulfur.dioxide, data=wine, binwidth=0.02) +
+  scale_x_log10(breaks=seq(0,80, 10))
 ```
 
 
@@ -118,16 +127,8 @@ qplot(x=total.sulfur.dioxide, data=wine, binwidth=2) +
 ```
 
 ```{r}
-qplot(x=log(total.sulfur.dioxide), data=wine, binwidth=0.04)
-```
-
-```{r}
-qplot(x=density, data=wine, binwidth=0.0001)
-```
-
-```{r}
-qplot(x=pH, data=wine, binwidth=0.01) +
-  scale_x_continuous(breaks=seq(0,4.01,0.1))
+qplot(x=total.sulfur.dioxide, data=wine, binwidth=0.02) +
+  scale_x_log10(breaks=seq(0,300,25))
 ```
 
 ```{r}
@@ -136,16 +137,157 @@ qplot(x=sulphates, data=wine, binwidth=0.02) +
 ```
 
 ```{r}
-qplot(x=log(sulphates), data=wine, binwidth= 0.02)
+qplot(x=sulphates, data=wine, binwidth= 0.01) +
+  scale_x_log10(breaks=seq(0,2,0.2))
 ```
 
+> Above, I've plotted histograms of the data pertaining to sulfer dioxide and sulphates. I plotted the log transformation of each of these variables as well, since the data are right-skewed and long-tailed. For free sulfur dioxide and total sulfur dioxide, after the transformation you can see some discreteness in the left side of the graphs, and the data are fairly wide spread. For free sulfur dioxide, the bulk of the data is between 5 and 20, with a peak around 6. For total sulfur dioxide, the bulk of the data is between 15 and 75, with a peak around 30. Lastly, for sulphates (a wine additive that contributes to sulfur dioxide gas levels), the data is more narrowly distributed, with the majority of the data falling between 0.5 and 0.8. The peak for sulphates appears to be around 5.8. 
+
+```{r}
+qplot(x=density, data=wine, binwidth=0.0002) +
+  scale_x_continuous(breaks=seq(0.990,1.004, 0.001))
+```
+
+> Above, the density histogram is already normally distributed, with the majority of the data falling between 0.995 and 0.999. Practically, this means that there is very little difference in density across the different wines evaluated for this dataset. I wonder if these very small differences affect quality ratings. My guess is that our mouths can't tell the difference between this very small range of densities.
 
 ```{r}
 qplot(x=alcohol, data=wine, binwidth= 0.1) +
   scale_x_continuous(breaks=seq(8,15,0.5))
 ```
 
+> Lastly, I plotted the histogram for alcohol content. This variable has a fairly large spread. The bulk of the data is between 9.25 and 11.5, and some high outliers can be seen around 14 and about 14.8. Some low outliers can be seen as well, around 8.5. I would assume that alcohol content probably has a large affect on wine quality since alcohol content can greatly affect the taste.
 
+> I'm curious as to how each of these variables affects the quality of wine as perceived by experts. I want to now examine how these variables look for the highest quality wines (rating of 7 or 8) compared to the lowest quality wines (rating of 3 or 4) in this dataset. Note, the high quality subset has 217 samples, while the low quality subset only has 63 samples.
+
+```{r}
+high_quality <- subset(wine, quality == 7 | quality == 8)
+low_quality <- subset(wine, quality == 3 | quality == 4)
+
+p1 <- qplot(x=fixed.acidity, data=high_quality)
+p2 <- qplot(x=fixed.acidity, data=low_quality)
+p3 <- qplot(x=volatile.acidity, data=high_quality)
+p4 <- qplot(x=volatile.acidity, data=low_quality)
+p5 <- qplot(x=citric.acid, data = high_quality)
+p6 <- qplot(x=citric.acid, data=low_quality)
+p7 <- qplot(x=pH, data=high_quality)
+p8 <- qplot(x=pH, data=low_quality)
+
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, ncol=2)
+```
+
+> Above, I plotted the subsets of high quality (left plots) and low quality wines (right plots). Let's look at the summaries as well.
+
+```{r}
+summary(high_quality$fixed.acidity)
+summary(low_quality$fixed.acidity)
+```
+
+> Above are the summaries for fixed acidity for the high quality (first) and low quality (second) wines. The highest quality wines have a greater mean and median fixed acidity than the lower quality wines, as well as a higher max value.
+
+```{r}
+summary(high_quality$volatile.acidity)
+summary(low_quality$volatile.acidity)
+```
+
+> Above are the summaries for volatile acidity for the high quality (first) and low quality (second) wines. The lowest quality wines have a much higher mean and median volatile acidity than the highest quality wines.
+
+```{r}
+summary(high_quality$citric.acid)
+summary(low_quality$citric.acid)
+```
+
+> Above are the summaries for citric acid content in the wine samples from the high quality (first) and low quality (second) data subsets. The high quality subset has a greater mean and median citric acid content than the low quality subset.
+
+```{r}
+summary(high_quality$pH)
+summary(low_quality$pH)
+```
+
+> Interestingly, the pH summaries for the high quality (first) and low quality (second) subsets are very similar. They have similar mean and median values, with the low quality wines having just slightly greater values.
+
+```{r}
+p1 <- qplot(x=residual.sugar, data=high_quality) + scale_x_log10()
+p2 <- qplot(x=residual.sugar, data=low_quality) + scale_x_log10()
+p3 <- qplot(x=chlorides, data=high_quality) + scale_x_log10()
+p4 <- qplot(x=chlorides, data=low_quality) + scale_x_log10()
+
+grid.arrange(p1, p2, p3, p4, ncol = 2)
+```
+
+> Above are the histograms for sugar and salts in the wine samples, broken up into subsets of high quality wines (left) and low quality wines (right).
+
+```{r}
+summary(high_quality$residual.sugar)
+summary(low_quality$residual.sugar)
+```
+
+> The summary above is for residual sugar for the high quality (first) and low quality (second) data subsets. The mean and median residual sugar content are similar for both subsets; they are just slightly higher for the high quality wines. The low quality subset has a much higher max value, however.
+
+```{r}
+summary(high_quality$chlorides)
+summary(low_quality$chlorides)
+```
+
+> Above, looking at the summary of chloride content, we can see that the lower quality wines (second) have a slightly higher median and mean than the higher quality wines (first).
+
+```{r}
+p1 <- qplot(x= free.sulfur.dioxide, data = high_quality) + scale_x_log10()
+p2 <- qplot(x= free.sulfur.dioxide, data = low_quality) + scale_x_log10()
+p3 <- qplot(x= total.sulfur.dioxide, data = high_quality) + scale_x_log10()
+p4 <- qplot(x= total.sulfur.dioxide, data = low_quality) + scale_x_log10()
+p5 <- qplot(x= sulphates, data = high_quality) + scale_x_log10()
+p6 <- qplot(x= sulphates, data = low_quality) + scale_x_log10()
+
+grid.arrange(p1,p2,p3,p4,p5,p6, ncol = 2)
+```
+
+> Above are the histograms for the variables relating to sulfur dioxide and sulphates, broken up into subsets of high quality wines (left) and low quality wines (right).
+
+```{r}
+summary(high_quality$free.sulfur.dioxide)
+summary(low_quality$free.sulfur.dioxide)
+```
+
+> From the summary above, we can see that the mean and median of free sulfur dioxide is higher in the high quality wines (first) than the low quality wines (second).
+
+```{r}
+summary(high_quality$total.sulfur.dioxide)
+summary(low_quality$total.sulfur.dioxide)
+```
+
+> The summary above shows that the mean of total sulfur dioxide content is nearly the same for the high (first) and low (second) quality wines, but the median is slightly higher for the high quality wines.
+
+```{r}
+summary(high_quality$sulphates)
+summary(low_quality$sulphates)
+```
+
+> And lastly in regards to sulfur dioxide and sulphates, the above summary shows that the high quality wines (first) have a higher mean and median sulphate concentration than the low quality wines (second).
+
+```{r}
+p1 <- qplot(x= density, data = high_quality)
+p2 <- qplot(x= density, data = low_quality)
+p3 <- qplot(x= alcohol, data = high_quality)
+p4 <- qplot(x= alcohol, data = low_quality)
+
+grid.arrange(p1, p2, p3, p4, ncol=2)
+```
+
+> Above is our last set of histogram plots of the high quality wines (left) compared to the low quality wines (right), this time for density and alcohol content. 
+
+```{r}
+summary(high_quality$density)
+summary(low_quality$density)
+```
+
+> The mean and median densities of the hiqh quality (first) and low quality (second) wines are practically the same, with the low quality wines having only a slightly greater density.
+
+```{r}
+summary(high_quality$alcohol)
+summary(low_quality$alcohol)
+```
+
+> The above summary shows that the mean and median alcohol content is greater for the high quality wines (first) than the low quality wines (second).
 
 # Univariate Analysis
 
@@ -154,18 +296,33 @@ reflect on and summarize what you've found. Use the questions below to help you
 gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
+There are 1599 observations in this dataset with 12 features of wine: fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, density, pH, sulphates, alcohol, and quality. The quality variable is of type integer and the rest are of type numeric.
+
+Other observations:
+- The median quality rating is 6, and the range is from 3 to 8. Most wines have a quality rating of 5 or 6, and 25% of wines have a quality rating above 6.
+- Most wines have a fixed acidity between 7 and 9, and a volatile acidity of 0.3-0.7.
+- Citric acid concentration tends to be wide spread, with the majority between 0 and 0.5 and a median of of 0.26.
+- The mean and median pH is 3.31. Most wines have a pH between 3.1 and 3.5.
+- Most wines have a residual sugar content between 2 and 2.5 and a chloride concentration between 0.06 and 0.1.
+- Free sulfur dioxide and total sulfur dioxide are also widespread, with the majority of wines falling in the range of 5-20, and 15-75 respectively. Median free sulfur dioxide is 14 and median total sulfur dioxide is 38.
+- Most wines have a sulphate concentration between 0.5 and 0.8.
+- The median alcohol content is 10.2, with most wines having alcohol content between 9.25 and 11.5. 
+- Density has a very narrow range (~0.01) with a median of 0.9968.
 
 ### What is/are the main feature(s) of interest in your dataset?
+The main feature of interest in this dataset is quality. I'm interested in seeing how the chemical properties of wine affect the quality rating of wine given by experts. 
 
-### What other features in the dataset do you think will help support your \
-investigation into your feature(s) of interest?
+### What other features in the dataset do you think will help support your \ investigation into your feature(s) of interest?
+I think the features of fixed acidity, volatile acidity, citric acid, chlorides, free sulfur dioxide, sulphates, and alcohol are most likely to affect the quality of wine, based on my initial comparisons of high quality wines (7 or 8) vs. low quality wines (3 or 4). My guess is that volatile acidity, citric acid content, sulfur dioxide content, and alcohol will have the greatest affect on quality because these properties tend to directly alter taste and smell.  
 
 ### Did you create any new variables from existing variables in the dataset?
+I did not create any new variables at this point.
 
-### Of the features you investigated, were there any unusual distributions? \
-Did you perform any operations on the data to tidy, adjust, or change the form \
-of the data? If so, why did you do this?
+### Of the features you investigated, were there any unusual distributions? \ Did you perform any operations on the data to tidy, adjust, or change the form \ of the data? If so, why did you do this?
 
+The distributions for residual sugar, chlorides, and sulphates were originally long-tailed on the right, and the distributions for free sulfur dioxide and total sulfur dioxide were skewed to the right. I decided to log-transform these distributions so that they would more closely resemble that of a normal distribution.
+
+The data loaded in was already tidy and in the form that I wanted. After plotting initial histograms, I created two subsets of the data by selecting only the highest quality wines (quality rating of 7 or 8)  and the lowest quality wines (quality rating of 3 or 4) from the original dataset and comparing their distributions and summaries for each feature.
 
 # Bivariate Plots Section
 
