@@ -26,6 +26,10 @@ a margin line to help you keep track of this guideline!
 
 library(ggplot2)
 library(gridExtra)
+library(corrplot)
+library(GGally)
+library(psych)
+library(dplyr)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
@@ -49,11 +53,13 @@ str(wine)
 ```
 
 ```{r}
+wine <- wine[ , names(wine) != 'X']
+wine$quality <- factor(wine$quality)
 summary(wine)
 ```
 
 
-> This data set contains 1599 observations of 13 variables. The first variable, X, appears to the index column. The next 11 variables are numbers pertaining to the chemical properties of wine, and the final variable is the integer rating for quality.
+> This data set contains 1599 observations of 13 variables. The first variable, X, appears to be the index column, so I removed it from the dataset before performing the summary. The next 11 variables are numbers pertaining to the chemical properties of wine, and the final variable is the quality rating. I converted the quality rating from an integer to a factor before performing the summary above. This way the quality rating will not be treated as a continuous number in plots.
 
 ```{r}
 qplot(x=quality, data=wine)
@@ -333,8 +339,146 @@ supporting variables. Try to look at relationships between supporting variables
 as well.
 
 ```{r echo=FALSE, Bivariate_Plots}
-
+wine.corr <- cor(wine[1:11])
+corrplot(wine.corr, method='circle')
 ```
+
+> Above is a correlation matrix of the continuous variables of the dataset. Some strong correlations that were expected are fixed acidity vs. citric acid, fixed acidity vs. pH, citric acid vs. pH, and citric acid vs. volatile acidity. In addition, free sulfur dioxide and total sulfur dioxide have a strong correlation which makes sense because total sulfur dioxide is the total of free and bound sulfur dioxide. Surpringly, sulphate concentration is not correlated with free or total sulfur dioxide in this dataset; I expected these to be correlated because sulphates are a wine additive that can contribute to sulfur dioxide gas levels. Density appears to be moderately correlated with alcohol and fixed acidity.
+
+```{r}
+pairs.panels(wine)
+```
+
+> Above is a scatterplot matrix of all the variables in the data set, providing an additional visualization of the correlations. Most importantly, quality appears to be most correlated with volatile acidity and alcohol, followed by sulphates and citric acid. I now want to take a closer look at these correlations as well as the correlation between some of the supporting variables mentioned above.
+
+```{r}
+ggplot(aes(x=quality, y=volatile.acidity), data=wine) + geom_boxplot()
+```
+
+```{r}
+tapply(wine$volatile.acidity, wine$quality, summary)
+```
+
+> Quality of wine tends to increase with decreasing volatile acidity values. The lowest quality ratings (3 and 4) have the highest median volatile acidity values and the largest interquartile ranges.
+
+```{r}
+ggplot(aes(x=quality, y=alcohol), data = wine) +
+  geom_boxplot()
+```
+
+```{r}
+tapply(wine$alcohol, wine$quality, summary)
+```
+
+> Higher quality wines tend to have higher alcohol contents. The group with quality 5 is the exception to this trend, and has the highest range and max value for alcohol content. 
+
+```{r}
+ggplot(aes(x=quality, y = citric.acid), data = wine) +
+  geom_boxplot()
+```
+
+```{r}
+tapply(wine$citric.acid, wine$quality, summary)
+```
+
+> Median citric acid concentration increases as quality increases. Citric acid can add freshness and flavor to wines, so it makes sense that using it as an additive can increase the perceived quality of the wine.
+
+```{r}
+ggplot(aes(x=quality, y = sulphates), data = wine) +
+  geom_boxplot()
+```
+```{r}
+ggplot(aes(x=quality, y = sulphates), data = subset(wine, sulphates < 1.5)) +
+  coord_cartesian(ylim=c(0.3,1)) +
+  geom_boxplot()
+```
+
+```{r}
+tapply(wine$sulphates, wine$quality, summary)
+```
+
+> The quality rating of wine tends to increase with increasing sulphate levels. The median sulphate levels are higher in the highest rated wines than in the lowest rated wines. Potassium sulphate is a wine additive that can contribute to sulfur dioxide gas levels, which helps to prevent oxidation and to maintain a wine's freshness. Since sulphates seem to have an effect on quality, let's also look at the relationship between total sulfur dioxide and quality.
+
+```{r}
+ggplot(aes(x=quality, y = total.sulfur.dioxide), data = wine) +
+  geom_boxplot()
+```
+
+```{r}
+p1 <- ggplot(aes(x=quality, y = total.sulfur.dioxide), data = wine) +
+  coord_cartesian(ylim=c(0,100)) +
+  geom_boxplot()
+
+p2 <- ggplot(aes(x=quality, y = free.sulfur.dioxide), data = wine) +
+  coord_cartesian(ylim=c(0,100)) +
+  geom_boxplot()
+
+grid.arrange(p1,p2,ncol=2)
+```
+
+> Interestingly, free and total sulfur dioxide levels do not appear to affect the quality of wine, despite the fact that sulphates do. This goes against my intuition since sulphates contribute to sulfur dioxide levels, and sulfur dioxide levels can become evident in the taste of wine. However, the dataset information states that free sulfur dioxide levels below 50ppm are generally undetected by the nose and taste. The majority of wines at all quality levels have a free sulfur dioxide level below this threshold. 
+
+```{r}
+ggplot(aes(x=sulphates, y=total.sulfur.dioxide), data=wine) +
+  geom_point(alpha=1/5)
+```
+
+> Again, it comes as a bit of a surprise that total sulfur dioxide is not correlated to sulphates as shown above. After doing some more research however, I found that the alcohol fermentation process produces sulfur dioxide in amounts ranging from 10 to over 100 ppm. Therefore, even in wines without a sulphate additive, sulfur dioxide exists.
+
+```{r}
+ggplot(aes(x=citric.acid, y=fixed.acidity), data=wine) + 
+  geom_point(alpha=1/4) +
+  geom_smooth(method='lm')
+```
+
+> Citric acid has a positive correlation with fixed.acidity that appears to be linear. This is logical since citric acid would contribute to the acidity of the wine.
+
+```{r}
+ggplot(aes(x=citric.acid, y=volatile.acidity), data=wine) + 
+  geom_point(alpha=1/4)
+```
+
+> Citric acid also appears to have a correlation with volatile acidity. However, unlike with fixed acidity, this is an inverse relationship, and is not quite linear. According to the dataset information page, volatile acidity is the measure of acetic acid which evaporates readily. I wonder why citric acid would affect this.
+
+```{r}
+ggplot(aes(x=fixed.acidity, y=pH), data=wine) + geom_point(alpha=1/4)
+```
+
+```{r}
+ggplot(aes(x=log(fixed.acidity), y=pH), data=wine) + 
+  geom_point(alpha=1/4) +
+  geom_smooth(method='lm')
+```
+
+> As intution would suggest, we can see that pH decreases as fixed acidity increases. When plotting pH against the log of fixed acidity, this relationship appears linear. 
+
+```{r}
+ggplot(aes(x=citric.acid, y=pH), data=wine) + 
+  geom_point(alpha=1/4) + 
+  geom_smooth(method=lm)
+```
+
+> A similar relationship can be seen between pH and citric acid above.
+
+```{r}
+ggplot(aes(x=alcohol, y=density), data=wine) +
+  geom_jitter(alpha=1/4) +
+  geom_smooth(method='lm')
+```
+
+> As alcohol content increases, density appears to decrease. However, these density ranges are miniscule and are most likely undetectable, which is why we can conclude it is the alcohol itself affecting quality and not the slight differences in density.
+
+```{r}
+ggplot(aes(x=residual.sugar, y=density), data=wine) + geom_point(alpha=1/8)
+```
+
+```{r}
+ggplot(aes(x=log(residual.sugar), y=density), data=subset(wine, residual.sugar<4)) +
+  geom_jitter(alpha=1/4) +
+  geom_smooth(method='lm')
+```
+
+> Residual sugars have the opposite effect on density as alcohol does. From the plot directly above, it appears to be a slight positive linear relationship when taking the log of residual sugar.
 
 # Bivariate Analysis
 
