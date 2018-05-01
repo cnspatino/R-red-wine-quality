@@ -343,7 +343,7 @@ wine.corr <- cor(wine[1:11])
 corrplot(wine.corr, method='circle')
 ```
 
-> Above is a correlation matrix of the continuous variables of the dataset. Some strong correlations that were expected are fixed acidity vs. citric acid, fixed acidity vs. pH, citric acid vs. pH, and citric acid vs. volatile acidity. In addition, free sulfur dioxide and total sulfur dioxide have a strong correlation which makes sense because total sulfur dioxide is the total of free and bound sulfur dioxide. Surpringly, sulphate concentration is not correlated with free or total sulfur dioxide in this dataset; I expected these to be correlated because sulphates are a wine additive that can contribute to sulfur dioxide gas levels. Density appears to be moderately correlated with alcohol and fixed acidity.
+> Above is a correlation matrix of the continuous variables of the dataset. Some strong correlations that were expected are fixed acidity vs. citric acid, fixed acidity vs. pH, and citric acid vs. pH. In addition, free sulfur dioxide and total sulfur dioxide have a strong correlation which makes sense because total sulfur dioxide is the total of free and bound sulfur dioxide. Surpringly, sulphate concentration is not correlated with free or total sulfur dioxide in this dataset; I expected these to be correlated because sulphates are a wine additive that can contribute to sulfur dioxide gas levels. Density appears to be moderately correlated with alcohol and fixed acidity. Lastly, citric acid has a negative correlation with volatile acidity, which I did not expect.
 
 ```{r}
 pairs.panels(wine)
@@ -370,7 +370,7 @@ ggplot(aes(x=quality, y=alcohol), data = wine) +
 tapply(wine$alcohol, wine$quality, summary)
 ```
 
-> Higher quality wines tend to have higher alcohol contents. The group with quality 5 is the exception to this trend, and has the highest range and max value for alcohol content. 
+> Higher quality wines tend to have higher alcohol contents. The group with quality 5 is the exception to this trend, and has the highest max value and the most outliers. 
 
 ```{r}
 ggplot(aes(x=quality, y = citric.acid), data = wine) +
@@ -400,11 +400,6 @@ tapply(wine$sulphates, wine$quality, summary)
 > The quality rating of wine tends to increase with increasing sulphate levels. The median sulphate levels are higher in the highest rated wines than in the lowest rated wines. Potassium sulphate is a wine additive that can contribute to sulfur dioxide gas levels, which helps to prevent oxidation and to maintain a wine's freshness. Since sulphates seem to have an effect on quality, let's also look at the relationship between total sulfur dioxide and quality.
 
 ```{r}
-ggplot(aes(x=quality, y = total.sulfur.dioxide), data = wine) +
-  geom_boxplot()
-```
-
-```{r}
 p1 <- ggplot(aes(x=quality, y = total.sulfur.dioxide), data = wine) +
   coord_cartesian(ylim=c(0,100)) +
   geom_boxplot()
@@ -419,11 +414,16 @@ grid.arrange(p1,p2,ncol=2)
 > Interestingly, free and total sulfur dioxide levels do not appear to affect the quality of wine, despite the fact that sulphates do. This goes against my intuition since sulphates contribute to sulfur dioxide levels, and sulfur dioxide levels can become evident in the taste of wine. However, the dataset information states that free sulfur dioxide levels below 50ppm are generally undetected by the nose and taste. The majority of wines at all quality levels have a free sulfur dioxide level below this threshold. 
 
 ```{r}
-ggplot(aes(x=sulphates, y=total.sulfur.dioxide), data=wine) +
+p1 <- ggplot(aes(x=sulphates, y=total.sulfur.dioxide), data=wine) +
   geom_point(alpha=1/5)
+
+p2 <- ggplot(aes(x=sulphates, y=free.sulfur.dioxide), data=wine) +
+  geom_point(alpha=1/5)
+
+grid.arrange(p1,p2,ncol=2)
 ```
 
-> Again, it comes as a bit of a surprise that total sulfur dioxide is not correlated to sulphates as shown above. After doing some more research however, I found that the alcohol fermentation process produces sulfur dioxide in amounts ranging from 10 to over 100 ppm. Therefore, even in wines without a sulphate additive, sulfur dioxide exists.
+> Again, it comes as a bit of a surprise that neither free or total sulfur dioxide is correlated to sulphates as shown above. After doing some more research however, I found that the alcohol fermentation process produces sulfur dioxide in amounts ranging from 10 to over 100 ppm. Therefore, even in wines without a sulphate additive, sulfur dioxide exists.
 
 ```{r}
 ggplot(aes(x=citric.acid, y=fixed.acidity), data=wine) + 
@@ -469,31 +469,32 @@ ggplot(aes(x=alcohol, y=density), data=wine) +
 > As alcohol content increases, density appears to decrease. However, these density ranges are miniscule and are most likely undetectable, which is why we can conclude it is the alcohol itself affecting quality and not the slight differences in density.
 
 ```{r}
-ggplot(aes(x=residual.sugar, y=density), data=wine) + geom_point(alpha=1/8)
+ggplot(aes(x=fixed.acidity, y=density), data=wine) + 
+  geom_point(alpha=1/4)
 ```
 
-```{r}
-ggplot(aes(x=log(residual.sugar), y=density), data=subset(wine, residual.sugar<4)) +
-  geom_jitter(alpha=1/4) +
-  geom_smooth(method='lm')
-```
-
-> Residual sugars have the opposite effect on density as alcohol does. From the plot directly above, it appears to be a slight positive linear relationship when taking the log of residual sugar.
+> Fixed acidity has the opposite effect on density as alcohol does. As fixed acidity increases, density increases slightly.
 
 # Bivariate Analysis
 
 > **Tip**: As before, summarize what you found in your bivariate explorations
 here. Use the questions below to guide your discussion.
 
-### Talk about some of the relationships you observed in this part of the \
-investigation. How did the feature(s) of interest vary with other features in \
-the dataset?
+### Talk about some of the relationships you observed in this part of the \ investigation. How did the feature(s) of interest vary with other features in \ the dataset?
+I found that quality increases as volatile acidity (acetic acid) decreases. This is intuitive since high amounts of acetic acid can lead to an unpleasant vinegar taste. In addition, higher quality wines are associated with higher alcohol contents and higher citric acid contents. Sulphate levels also appeared to have an effect on quality, with slight increases in concentration leading to increased quality. Sulfur dioxide levels, however, do not appear to directly affect quality despite the fact that sulfur dioxide gas is a byproduct of sulphates. 
 
-### Did you observe any interesting relationships between the other features \
-(not the main feature(s) of interest)?
+
+### Did you observe any interesting relationships between the other features \ (not the main feature(s) of interest)?
+One interesting relationship that I did not expect was the inverse relationship between citric acid and volatile acidity (acetic acid concentration). From doing some research, I found that during the malolatic fermentation process (which is often performed after the primary fermentation process), the metabolism of citric acid occurs; the citric-sugar co-metabolism can increase the formation of volatile acid in wine. From this information I would assume a positive relationship between citric acid and volatile acidity.
+
+Another interesting, unexpected relationship is the positive relationship between fixed acidity and density. I am not sure why this occurs.
+
+Lastly, I expected that sulphates would have a positive correlation to free or total suflur dioxide levels since sulfur dioxide is a byproduct. However, there was no apparent relationship between these variables, suggesting that the sulfur dioxide levels produced by fermentation probably overshadows those produced by sulphates in many cases.
+
+http://wineserver.ucdavis.edu/industry/enology/methods_and_techniques/reagents/citric_acid.html
 
 ### What was the strongest relationship you found?
-
+The strongest relationship I found was that of fixed acidity and pH, with a correlation coefficient of 0.68 (strong). The strongest relationship I found regarding the main feature of interest, quality, was quality vs. alcohol content with a correlation coefficient of 0.48 (moderate).
 
 # Multivariate Plots Section
 
@@ -510,14 +511,11 @@ will do that.
 
 # Multivariate Analysis
 
-### Talk about some of the relationships you observed in this part of the \
-investigation. Were there features that strengthened each other in terms of \
-looking at your feature(s) of interest?
+### Talk about some of the relationships you observed in this part of the \ investigation. Were there features that strengthened each other in terms of \ looking at your feature(s) of interest?
 
 ### Were there any interesting or surprising interactions between features?
 
-### OPTIONAL: Did you create any models with your dataset? Discuss the \
-strengths and limitations of your model.
+### OPTIONAL: Did you create any models with your dataset? Discuss the \ strengths and limitations of your model.
 
 ------
 
