@@ -613,7 +613,7 @@ wine$sulphates.chloride.ratio <- wine$sulphates/wine$chlorides
 tapply(wine$sulphates.chloride.ratio, wine$quality.factor, summary)
 ```
 
-> Above, I decided to look at how the sulphate to chloride ratio affects quality of wine. From research I found that some brewers believe the sulphate to chloride ratio is more important than the amounts themselves - this is generally discussed for beers but I decided to look at it for wines too. We can see that the sulphate to chloride ratio does appear to affect quality - higher quality wines have higher median ratios.
+> Above, I decided to look at how the sulphate to chloride ratio affects quality of wine. From research I found that some brewers believe the sulphate to chloride ratio is more important than the amounts themselves - this is generally discussed for beers but I decided to look at it for wines too. We can see that the sulphate to chloride ratio does appear to affect quality in a linear fashion - higher quality wines have higher median ratios.
 
 ```{r}
 ggplot(aes(x=volatile.acidity, y=alcohol), data=wine) +
@@ -647,7 +647,7 @@ ggplot(aes(x=volatile.acidity, y=citric.acid), data=wine) +
   facet_wrap(~alcohol.bucket)
 ```
 
-> When citric acid vs. volatile acidity is faceted over alcohol ranges, it appears that for the lower alcohol ranges, the higher qualities are seen at low volatile acidity and high citric acid concentration. For the higher alcohol ranges, the high quality wines are seen across a wider range of citric acid and volatile acidity values, further strengthening the conclusion that alcohol is the main contributor to quality.
+> When citric acid vs. volatile acidity is faceted over alcohol ranges, it appears that for the lower alcohol ranges, the higher qualities are seen at low volatile acidity and high citric acid concentration. For the higher alcohol ranges, the high quality wines are seen across a wider range of citric acid and volatile acidity values.
 
 ```{r}
 m1 <- lm(quality ~ alcohol, data = wine)
@@ -708,10 +708,17 @@ predict(m5, newdata = wineLQ, interval="prediction", level = .95)
 
 ### Talk about some of the relationships you observed in this part of the \ investigation. Were there features that strengthened each other in terms of \ looking at your feature(s) of interest?
 
+When plotting the ratio of citric acid to fixed acidity against quality, we can see a more linear relationship than with citric acid alone. This ratio, which normalizes the citric acid concentration to total fixed acidity, has a positive relationship with quality. 
+
+Additionally, from plotting the ratio of sulphates to chlorides, I can see a more dramatic, more linear relationship with quality than the plot with sulphates alone. This ratio is often said to be important for beer-brewing, so it's interesting that it appears to have an effect here as well. 
+
+When placing the alcohol contents in buckets of ranges and plotting this along with other variables vs. quality, I saw that for most of the alcohol ranges, high quality was mainly associated with high citric acid and low volatile acidity. However, for the higher alcohol ranges, the high quality wines were seen across a wide range of citric acid and volatile acidity. This strengthens the conclusion that alcohol is the main contributor to quality, at least in this dataset. 
+
 ### Were there any interesting or surprising interactions between features?
+I found it interesting that wines with high volatile acidity values can be high quality if they have high alcohol content. The wines in the higher alcohol ranges do not follow the trend for volatile acidity across quality levels like the wines in the lower alcohol ranges do. It seems that high alcohol percentages can compensate for the high volatile acidity levels.
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the \ strengths and limitations of your model.
-
+I created a linear model with the dataset using 7 of the 11 features. Alcohol contributed the most to the model (R-squared value of 0.227), while the other features only increased it by small amounts. Based on the final R-squared value of 0.35 and the predictions from my test samples, it is clear that this is not a very effective model for predicting quality. For the more extreme quality ratings (3 and 8), it does not seem to do well at predicting the values even within a 95% confidence interval. Additionally, this model does not predict integer values. 
 ------
 
 # Final Plots and Summary
