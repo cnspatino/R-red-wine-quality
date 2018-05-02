@@ -530,12 +530,20 @@ ggplot(aes(x=quality), data = wine) +
 > From the density plot above, we can see that there are more high-alcohol wines with high quality ratings and more low-alcohol wines with the lower quality ratings.
 
 ```{r}
-ggplot(aes(x=quality, y=volatile.acidity), data = wine) + 
+p1 <- ggplot(aes(x=quality, y=volatile.acidity), data = wine) + 
   geom_line(aes(color=alcohol.bucket), stat='summary', fun.y = median) +
     scale_color_brewer(palette='Greens',
     guide = guide_legend(title = 'Percent Alcohol', reverse = T,
     override.aes = list(alpha = 1, size = 2))) +
     theme(panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393'))
+
+p2 <- ggplot(aes(x=volatile.acidity, y=quality), data = wine) + 
+  geom_point(aes(color=alcohol.bucket)) +
+    scale_color_brewer(palette='Greens', guide = guide_legend(title = 'Percent Alcohol', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) +
+    theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393'))
+
+grid.arrange(p1,p2,ncol=1)
 ```
 
 > Interestingly, wines in the highest alcohol bucket are the only ones that do not follow the trend of increasing quality with decreasing volatile acidity. Additionally, no wines in the two highest alcohol bucket had a quality rating of 3 and no wines in the lowest alcohol bucket had a quality rating of 8.
@@ -552,7 +560,7 @@ table(wine$volatile.acidity.bucket)
 ```{r}
 ggplot(aes(x=quality), data = wine) + 
   geom_density(aes(color=volatile.acidity.bucket)) +
-    scale_color_brewer(palette='Greens',
+    scale_color_brewer(palette='Purples',
     guide = guide_legend(title = 'Volatile Acidity', reverse = T,
     override.aes = list(alpha = 1, size = 2))) +
     theme(panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393'))
@@ -561,12 +569,20 @@ ggplot(aes(x=quality), data = wine) +
 > Here, the density plot shows that there are more wines with low volatile acidity in the high quality bins and more wines with high volatie acidity in the low quality bins.
 
 ```{r}
-ggplot(aes(x=quality, y=alcohol), data = wine) + 
+p1 <- ggplot(aes(x=quality, y=alcohol), data = wine) + 
   geom_line(aes(color=volatile.acidity.bucket), stat='summary', fun.y = median) +
-    scale_color_brewer(palette='Greens',
+    scale_color_brewer(palette='Purples',
     guide = guide_legend(title = 'Volatile Acidity', reverse = T,
     override.aes = list(alpha = 1, size = 2))) +
     theme(panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393'))
+
+p2 <- ggplot(aes(x=alcohol, y=quality), data = wine) + 
+  geom_point(aes(color=volatile.acidity.bucket)) +
+    scale_color_brewer(palette='Purples', guide = guide_legend(title = 'Volatile Acidity', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) +
+    theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393'))
+
+grid.arrange(p1,p2,ncol=1)
 ```
 
 > No wines in the lowest volatile acidity bucket had a quality rating of 3, but all volatile acidity buckets have some wines with a quality rating of 8. For the higher quality ratings, the higher volatile acidity buckets are associated with higher alcohol contents. Perhaps higher alcohol percentages help to compensate for any vinegar taste from high volatile acidity concentarations.
@@ -613,11 +629,15 @@ wine$sulphates.chloride.ratio <- wine$sulphates/wine$chlorides
 tapply(wine$sulphates.chloride.ratio, wine$quality.factor, summary)
 ```
 
+```{r}
+cor(wine$quality, wine$sulphates.chloride.ratio, method='pearson')
+```
+
 > Above, I decided to look at how the sulphate to chloride ratio affects quality of wine. From research I found that some brewers believe the sulphate to chloride ratio is more important than the amounts themselves - this is generally discussed for beers but I decided to look at it for wines too. We can see that the sulphate to chloride ratio does appear to affect quality in a linear fashion - higher quality wines have higher median ratios.
 
 ```{r}
 ggplot(aes(x=volatile.acidity, y=alcohol), data=wine) +
-  geom_point(aes(color=quality.factor)) +
+  geom_point(aes(color=quality.factor))+
     scale_color_brewer(palette='Blues',
     guide = guide_legend(title = 'Quality', reverse = T,
     override.aes = list(alpha = 1, size = 2))) +
@@ -710,12 +730,12 @@ predict(m5, newdata = wineLQ, interval="prediction", level = .95)
 
 When plotting the ratio of citric acid to fixed acidity against quality, we can see a more linear relationship than with citric acid alone. This ratio, which normalizes the citric acid concentration to total fixed acidity, has a positive relationship with quality. 
 
-Additionally, from plotting the ratio of sulphates to chlorides, I can see a more dramatic, more linear relationship with quality than the plot with sulphates alone. This ratio is often said to be important for beer-brewing, so it's interesting that it appears to have an effect here as well. 
+Additionally, from plotting the ratio of sulphates to chlorides, I can see a more dramatic, more linear relationship with quality than the plot with sulphates alone. In fact, the ratio of these two variables has a higher correlation coefficient with quality than the two variables alone. This ratio is often said to be important for beer-brewing, so it's interesting that it appears to have an effect here as well. 
 
 When placing the alcohol contents in buckets of ranges and plotting this along with other variables vs. quality, I saw that for most of the alcohol ranges, high quality was mainly associated with high citric acid and low volatile acidity. However, for the higher alcohol ranges, the high quality wines were seen across a wide range of citric acid and volatile acidity. This strengthens the conclusion that alcohol is the main contributor to quality, at least in this dataset. 
 
 ### Were there any interesting or surprising interactions between features?
-I found it interesting that wines with high volatile acidity values can be high quality if they have high alcohol content. The wines in the higher alcohol ranges do not follow the trend for volatile acidity across quality levels like the wines in the lower alcohol ranges do. It seems that high alcohol percentages can compensate for the high volatile acidity levels.
+I found it interesting that wines with high volatile acidity values can be high quality if they have high alcohol content. The wines in the higher alcohol ranges do not follow the trend for volatile acidity across quality levels like the wines in the lower alcohol ranges do. It seems that high alcohol percentages can compensate for the high volatile acidity levels. The trend seen between quality and the ratio of sulphates to chlorides as described above was also an interesting find.
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the \ strengths and limitations of your model.
 I created a linear model with the dataset using 7 of the 11 features. Alcohol contributed the most to the model (R-squared value of 0.227), while the other features only increased it by small amounts. Based on the final R-squared value of 0.35 and the predictions from my test samples, it is clear that this is not a very effective model for predicting quality. For the more extreme quality ratings (3 and 8), it does not seem to do well at predicting the values even within a 95% confidence interval. Additionally, this model does not predict integer values. 
@@ -733,27 +753,75 @@ make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot One
 ```{r echo=FALSE, Plot_One}
+p1 <- ggplot(aes(x=quality), data = wine) + 
+  geom_density(aes(color=alcohol.bucket)) +
+    scale_color_brewer(palette='Greens',
+    guide = guide_legend(title = '% Alcohol Bucket', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) +
+    theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393')) +
+  ggtitle('Density of Quality by Alcohol Content') +
+  xlab('Quality') +
+  ylab('Density')
+
+p2 <- ggplot(aes(x=volatile.acidity, y=quality), data = wine) + 
+  geom_point(aes(color=alcohol.bucket)) +
+    scale_color_brewer(palette='Greens',
+    guide = FALSE) +
+    theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393')) +
+  ggtitle('Quality by Volatile Acidity and Alcohol Content') +
+  xlab('Volatile Acidity') +
+  ylab('Quality')
+
+grid.arrange(p1,p2,ncol=1)
 
 ```
 
 ### Description One
-
+A greater proportion of wines from the highest alcohol range have higher qualities (7 or 8), and a greater proportion of wines from the lowest alcohol range have lower qualities (3 or 4) compared to the proportions from the distrubition of the other alcohol ranges. A switch in the order of proportions starts to begin between the quality ratings of 5 and 6. A much lower proportion of wines have a 3 or 8 rating than the other ratings overall. No wines were rated below 3 or above 8. In addition, higher quality ratings tend to be associated with lower volatile acidity, the exception being some wines in the highest alcohol range. 
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
+
+p1 <- ggplot(aes(x=quality), data = wine) + 
+  geom_density(aes(color=volatile.acidity.bucket)) +
+    scale_color_brewer(palette='Purples',
+    guide = guide_legend(title = 'Volatile Acidity Bucket (g/L)', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) +
+    theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393')) +
+  ggtitle('Density of Quality by Volatile Acidity') +
+  xlab('Quality') +
+  ylab('Density')
+
+p2 <- ggplot(aes(x=alcohol, y=quality), data = wine) + 
+  geom_point(aes(color=volatile.acidity.bucket)) +
+    scale_color_brewer(palette='Purples',
+    guide = FALSE) +
+    theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393')) +
+  ggtitle('Quality by Alcohol Content and Volatile Acidity') +
+  xlab('% Alcohol') +
+  ylab('Quality')
+
+grid.arrange(p1,p2,ncol=1)
 
 ```
 
 ### Description Two
 
+A greater proportion of wines from the lowest volatile acidity range have higher qualities (7 or 8), and a greater proportion of wines from the highest volatile acidity range have lower qualities (3 or 4) compared to those from the other ranges. Just like with alcohol content, the switch in order of the proportions starts to occur between 5 and 6. The second plot confirms that high quality ratings tend to be associated with high alcohol content and low volatile acidity ranges, the exception being some wines with high alcohol content. 
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
-
+ggplot(aes(x=quality.factor, y=sulphates.chloride.ratio), data=wine) +
+  geom_boxplot(aes(fill=quality.factor)) + scale_fill_brewer(palette='Blues') +
+  coord_cartesian(ylim=c(0,15)) +
+  theme(plot.title = element_text(hjust = 0.5), legend.position='none', panel.background = element_rect(fill='gray'), panel.grid.major = element_line(color='#969393'), panel.grid.minor = element_line(color='#969393')) +
+  ggtitle('Sulphate to Chloride Ratio by Quality Rating') +
+  xlab('Quality') +
+  ylab('Sulphate (g/L) to Chloride (g/L) Ratio')
 ```
 
 ### Description Three
-
+Higher quality ratings are associated with higher sulphate to chloride ratios. It appears to be a somewhat linear, positive relationship.
 ------
 
 # Reflection
