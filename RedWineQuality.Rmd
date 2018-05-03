@@ -1,9 +1,6 @@
 Exploration of Red Wine Quality by Cady Patino
 ========================================================
 
-> **Tip**: You will see quoted sections like this throughout the template to
-help you construct your report. Make sure that you remove these notes before
-you finish and submit your project!
 
 > **Tip**: One of the requirements of this project is that your code follows
 good formatting techniques, including limiting your lines to 80 characters or
@@ -40,16 +37,9 @@ library(memisc)
 wine <- read.csv('WineQualityReds.csv')
 ```
 
-> This report explores a dataset containing 11 variables of the chemical properties of red wines and their corresponding quality rating. The quality rating for each wine is the median grade given by at least three wine experts and has a value between 0 (very bad) and 10 (very excellent).
+> This report explores a dataset containing 11 variables of the chemical properties of red wines from the Portuguese Vinho Verde region and their corresponding quality rating. The quality rating for each wine is the median grade given by at least three wine experts and has a value between 0 (very bad) and 10 (very excellent).
 
 # Univariate Plots Section
-
-> **Tip**: In this section, you should perform some preliminary exploration of
-your dataset. Run some summaries of the data and create univariate plots to
-understand the structure of the individual variables in your dataset. Don't
-forget to add a comment after each plot or closely-related group of plots!
-There should be multiple code chunks and text sections; the first one below is
-just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
 str(wine)
@@ -298,10 +288,6 @@ summary(low_quality$alcohol)
 
 # Univariate Analysis
 
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
-
 ### What is the structure of your dataset?
 There are 1599 observations in this dataset with 12 features of wine: fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, density, pH, sulphates, alcohol, and quality. The quality variable is of type integer and the rest are of type numeric.
 
@@ -332,12 +318,6 @@ The distributions for residual sugar, chlorides, and sulphates were originally l
 The data loaded in was already tidy and in the form that I wanted. After plotting initial histograms, I created two subsets of the data by selecting only the highest quality wines (quality rating of 7 or 8)  and the lowest quality wines (quality rating of 3 or 4) from the original dataset and comparing their distributions and summaries for each feature.
 
 # Bivariate Plots Section
-
-> **Tip**: Based on what you saw in the univariate plots, what relationships
-between variables might be interesting to look at in this section? Don't limit
-yourself to relationships between a main output feature and one of the
-supporting variables. Try to look at relationships between supporting variables
-as well.
 
 ```{r echo=FALSE, Bivariate_Plots}
 wine.corr <- cor(wine[1:12])
@@ -743,14 +723,6 @@ I created a linear model with the dataset using 7 of the 11 features. Alcohol co
 
 # Final Plots and Summary
 
-> **Tip**: You've done a lot of exploration and have built up an understanding
-of the structure of and relationships between the variables in your dataset.
-Here, you will select three plots from all of your previous exploration to
-present here as a summary of some of your most interesting findings. Make sure
-that you have refined your selected plots for good titling, axis labels (with
-units), and good aesthetic choices (e.g. color, transparency). After each plot,
-make sure you justify why you chose each plot by describing what it shows.
-
 ### Plot One
 ```{r echo=FALSE, Plot_One}
 p1 <- ggplot(aes(x=quality), data = wine) + 
@@ -826,10 +798,9 @@ Higher quality ratings are associated with higher sulphate to chloride ratios. I
 
 # Reflection
 
-> **Tip**: Here's the final step! Reflect on the exploration you performed and
-the insights you found. What were some of the struggles that you went through?
-What went well? What was surprising? Make sure you include an insight into
-future work that could be done with the dataset.
+This report explores data collected from 1599 red wine samples of the Portuguese Vinho Verde type around 2009. Eleven physiochemical properties were collected from each sample (input variables), along with a median quality rating from wine experts (target feature). I first looked at the distrubution of individual variables to get a better sense of th data. I then took a closer look at pairs of variables that appeared to be correlated, which eventually led me to creating multivariate plots to better explain quality. 
 
-> **Tip**: Don't forget to remove this, and the other **Tip** sections before
-saving your final work and knitting the final report!
+Percent alcohol content had the highest correlation with quality, with high quality wines generally being associated with relatively high alcohol percentages. There was also a clear trend between volatile acidity and quality; median volatile acidity decreased with increasing quality ratings. This was not surprising as volatile acidity is the property that can lead to an unpleasant vinegar taste in wine. Interestingly, it appears high alcohol content may be able to compensate for high volatile acidity in some cases. Citric acid and sulphate to chloride ratio are also correlated to quality, but this is a weaker correlation. Both have a positive relationship to quality. Surprisingly, sulfur dioxide content and residual sugar content do not seem to be correlated to quality, at least at the levels in this dataset. These were two features that I assumed would have a greater effect on taste, and therefore the quality rating. A relationship between two of the properties that I still do not understand is that of citric acid vs. volatile acidity. Volatile acidity (acetic acid content) decreases as citric acid content increases, and I was not able to come up with an explanation for this.
+
+I constructed a linear model based on some of these correlations with quality, but my model only accounts for 35% of the variance in quality. My main struggle was coming up with other variables or transformation of variables to account for more of this variance. I think one of the main limitations is that this dataset mostly contains wines of mid-level quality ratings, i.e. there are very few wines with a low (3) or high(8) quality rating, and no wines below 3 or above 8. To investigate this data further, I would try to create a non-linear model to better predict quality, because the linear model I created was clearly ineffective for this particular dataset. A new dataset with a larger sample size with more wines of extreme quality would also help lead to a better predictive model. In addition, it would be interesting if tannins and/or carbon dioxide properties were added as features, since I would assume these would affect perceived quality. From what I read about Vinho Verde wines, many of these wines have a spritz to them from carbon dioxide content, but this was not mentioned in this dataset. These further explorations could lead to a better model for wine quality prediction. 
+
