@@ -1,5 +1,9 @@
-Exploration of Red Wine Quality by Cady Patino
-========================================================
+---
+title: Exploration of Red Wine Quality
+author: Cady Patino
+date: May 7, 2018
+output: rmarkdown::github_document
+---
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 
